@@ -1,0 +1,5 @@
+# Direct runtime dependencies for this project
+torch==2.5.1
+torchvision==0.20.1
+matplotlib==3.10.8
+numpy==2.2.6

@@ -26,41 +26,41 @@ def main():
     cifar10_model, cifar10_test_loader, device = cifar10.run()
 
     mnist_attack_configs = [
-        {"attack_method": "FGSM", "targeted": True, "eps": 0.3},
-        {"attack_method": "FGSM", "targeted": False, "eps": 0.3},
-        {"attack_method": "PGD", "targeted": True, "eps": 0.3, "k": 40, "eps_step": 0.01},
-        {"attack_method": "PGD", "targeted": False, "eps": 0.3, "k": 40, "eps_step": 0.01},
+        {"attack_method": "FGSM", "targeted": True, "eps": 0.1},
+        {"attack_method": "FGSM", "targeted": False, "eps": 0.1},
+        {"attack_method": "PGD", "targeted": True, "eps": 0.1, "k": 40, "eps_step": 0.01},
+        {"attack_method": "PGD", "targeted": False, "eps": 0.1, "k": 40, "eps_step": 0.01},
     ]
     cifar10_attack_configs = [
-        {"attack_method": "FGSM", "targeted": True, "eps": 0.05},
-        {"attack_method": "FGSM", "targeted": False, "eps": 0.05},
-        {"attack_method": "PGD", "targeted": True, "eps": 0.05, "k": 10, "eps_step": 0.01},
-        {"attack_method": "PGD", "targeted": False, "eps": 0.05, "k": 10, "eps_step": 0.01},
+        {"attack_method": "FGSM", "targeted": True, "eps": 0.03},
+        {"attack_method": "FGSM", "targeted": False, "eps": 0.03},
+        {"attack_method": "PGD", "targeted": True, "eps": 0.03, "k": 10, "eps_step": 0.01},
+        {"attack_method": "PGD", "targeted": False, "eps": 0.03, "k": 10, "eps_step": 0.01},
     ]
 
     print("2. Targeted FGSM")
     print("MNIST Model")
-    fgsm.evaluate_fgsm(mnist_model, mnist_test_loader, device, eps=0.3, targeted=True)
+    fgsm.evaluate_fgsm(mnist_model, mnist_test_loader, device, eps=0.1, targeted=True)
     print("CIFAR-10 Model")
-    fgsm.evaluate_fgsm(cifar10_model, cifar10_test_loader, device, eps=0.05, targeted=True)
+    fgsm.evaluate_fgsm(cifar10_model, cifar10_test_loader, device, eps=0.03, targeted=True)
 
     print("3. Untargeted FGSM")
     print("MNIST Model")
-    fgsm.evaluate_fgsm(mnist_model, mnist_test_loader, device, eps=0.3, targeted=False)
+    fgsm.evaluate_fgsm(mnist_model, mnist_test_loader, device, eps=0.1, targeted=False)
     print("CIFAR-10 Model")
-    fgsm.evaluate_fgsm(cifar10_model, cifar10_test_loader, device, eps=0.05, targeted=False)
+    fgsm.evaluate_fgsm(cifar10_model, cifar10_test_loader, device, eps=0.03, targeted=False)
 
     print("4-1. Targeted PGD")
     print("MNIST Model")
-    pgd.evaluate_pgd(mnist_model, mnist_test_loader, device, k=40, eps=0.3, eps_step=0.01, targeted=True)
+    pgd.evaluate_pgd(mnist_model, mnist_test_loader, device, k=40, eps=0.1, eps_step=0.01, targeted=True)
     print("CIFAR-10 Model")
-    pgd.evaluate_pgd(cifar10_model, cifar10_test_loader, device, k=10, eps=0.05, eps_step=0.01, targeted=True)
+    pgd.evaluate_pgd(cifar10_model, cifar10_test_loader, device, k=10, eps=0.03, eps_step=0.01, targeted=True)
 
     print("4-2. Untargeted PGD")
     print("MNIST Model")
-    pgd.evaluate_pgd(mnist_model, mnist_test_loader, device, k=40, eps=0.3, eps_step=0.01, targeted=False)
+    pgd.evaluate_pgd(mnist_model, mnist_test_loader, device, k=40, eps=0.1, eps_step=0.01, targeted=False)
     print("CIFAR-10 Model")
-    pgd.evaluate_pgd(cifar10_model, cifar10_test_loader, device, k=10, eps=0.05, eps_step=0.01, targeted=False)
+    pgd.evaluate_pgd(cifar10_model, cifar10_test_loader, device, k=10, eps=0.03, eps_step=0.01, targeted=False)
 
     save_dataset_visualizations(
         mnist_model,
