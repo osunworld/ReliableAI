@@ -25,7 +25,7 @@ def fgsm_untargeted(model, x, label, eps):
     x_adv = torch.clamp(x_adv, 0, 1)
     return x_adv
 
-def evaluate_fgsm(model, test_loader, device, eps, targeted=True num_samples=1000):
+def evaluate_fgsm(model, test_loader, device, eps, targeted=True, num_samples=1000):
     model.eval()
     success, total = 0,0
 
