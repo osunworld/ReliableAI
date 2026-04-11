@@ -1,7 +1,10 @@
 __pycache__/
 *.py[cod]
 
-data/
+hw1/data/
+hw2/data/
 
 *.pt
 *.pth
+
+/hw2/deepxplore/
