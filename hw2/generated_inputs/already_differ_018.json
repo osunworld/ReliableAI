@@ -1,0 +1,26 @@
+{
+  "model_ids": [
+    "jialicheng/cifar10_resnet-50",
+    "jialicheng/unlearn-so_cifar10_resnet-50_salun_10_100"
+  ],
+  "true_label": "airplane",
+  "predictions": [
+    {
+      "label_id": 0,
+      "label_name": "airplane",
+      "confidence": 0.5359869599342346
+    },
+    {
+      "label_id": 2,
+      "label_name": "bird",
+      "confidence": 0.4122173488140106
+    }
+  ],
+  "coverage": [
+    0.0007684426229508197,
+    0.0007684426229508197
+  ],
+  "average_coverage": 0.0007684426229508197,
+  "original_image": "already_differ_018_orig.png",
+  "generated_image": "already_differ_018_gen.png"
+}
