@@ -1,4 +1,5 @@
 import argparse
+import os
 
 import numpy as np
 import torch
@@ -21,11 +22,15 @@ from utils import (
     update_coverage,
 )
 
+HW2_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+DEFAULT_RESULTS_DIR = os.path.join(HW2_DIR, "results")
+
 
 def parse_args():
     parser = argparse.ArgumentParser(
         description="PyTorch DeepXplore-style differential testing on CIFAR-10 ResNet50 models."
     )
+    # transformation / weight_* / step / threshold는 원본 DeepXplore의 핵심 탐색 파라미터에 해당한다.
     parser.add_argument("transformation", choices=["light", "occl", "blackout"])
     parser.add_argument("weight_diff", type=float)
     parser.add_argument("weight_nc", type=float)
@@ -38,7 +43,7 @@ def parse_args():
     parser.add_argument("--target_model", choices=[0, 1], default=0, type=int)
     parser.add_argument("--start_point", nargs=2, default=[0, 0], type=int)
     parser.add_argument("--occlusion_size", nargs=2, default=[8, 8], type=int)
-    parser.add_argument("--output_dir", default="./generated_inputs")
+    parser.add_argument("--output_dir", default=DEFAULT_RESULTS_DIR)
     parser.add_argument("--seed", default=1, type=int)
     return parser.parse_args()
 
@@ -47,10 +52,19 @@ def main():
     args = parse_args()
     set_random_seed(args.seed)
 
-    device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+    # 가능하면 GPU/MPS를 사용하고, 없으면 CPU에서 동일 코드가 동작하도록 한다.
+    if torch.cuda.is_available():
+        device = torch.device("cuda")
+    elif torch.backends.mps.is_available():
+        device = torch.device("mps")
+    else:
+        device = torch.device("cpu")
+
+    # 두 개의 오픈소스 ResNet50과 CIFAR-10 테스트셋을 준비한다.
     processor, models, class_names = load_models((args.model1, args.model2), device=device)
     dataset = CIFAR10(root="./data", train=False, download=True)
 
+    # coverage table은 모델별 hidden state 채널 단위로 관리한다.
     sample_input = preprocess_raw_image(dataset[0][0], processor, device)
     coverage_tables = init_coverage_tables(models, sample_input)
 
@@ -58,12 +72,14 @@ def main():
     successful_cases = 0
 
     for case_index in range(args.seeds):
+        # seed 입력 하나를 고르고, 원본과 수정본 이미지를 각각 관리한다.
         sample_idx = int(rng.integers(0, len(dataset)))
         raw_image, true_label = dataset[sample_idx]
 
         gen_img = preprocess_raw_image(raw_image, processor, device).clone().detach()
         orig_img = gen_img.clone().detach()
 
+        # 먼저 자연 입력만으로도 두 모델이 이미 불일치하는지 확인한다.
         with torch.no_grad():
             initial_outputs = [model(pixel_values=gen_img) for model in models]
         initial_predictions = [prediction_details(output.logits, class_names) for output in initial_outputs]
@@ -98,17 +114,22 @@ def main():
 
         original_label = predicted_labels[0]
 
+        # 자연 입력에서 불일치가 없으면 gradient ascent로 새로운 테스트 입력을 생성한다.
         for iteration in range(args.grad_iterations):
             gen_img.requires_grad_(True)
             outputs = [model(pixel_values=gen_img, output_hidden_states=True) for model in models]
             logits = [output.logits for output in outputs]
             target_neurons = [neuron_to_cover(coverage_table) for coverage_table in coverage_tables]
 
+            # differential loss:
+            # 원래 합의하던 클래스를 한 모델에서는 약하게, 다른 모델에서는 유지/강화하도록 유도한다.
             if args.target_model == 0:
                 diff_loss = -args.weight_diff * logits[0][0, original_label] + logits[1][0, original_label]
             else:
                 diff_loss = logits[0][0, original_label] - args.weight_diff * logits[1][0, original_label]
 
+            # coverage loss:
+            # 아직 덜 본 뉴런을 활성화하도록 hidden state 평균값을 손실에 더한다.
             coverage_loss = torch.tensor(0.0, device=device)
             for output, (layer_idx, channel_idx) in zip(outputs, target_neurons):
                 coverage_loss = coverage_loss + output.hidden_states[layer_idx][0, channel_idx].mean()
@@ -122,9 +143,15 @@ def main():
 
             total_loss.backward()
             grads = normalize(gen_img.grad.detach())
-            grads = apply_transformation_constraint(grads, args.transformation, tuple(args.start_point), tuple(args.occlusion_size))
+            grads = apply_transformation_constraint(
+                grads,
+                args.transformation,
+                tuple(args.start_point),
+                tuple(args.occlusion_size),
+            )
             gen_img = clip_processed_image((gen_img + grads * args.step).detach(), processor)
 
+            # 새 입력으로 두 모델을 다시 평가해 disagreement가 생겼는지 확인한다.
             with torch.no_grad():
                 updated_outputs = [model(pixel_values=gen_img) for model in models]
             updated_predictions = [prediction_details(output.logits, class_names) for output in updated_outputs]

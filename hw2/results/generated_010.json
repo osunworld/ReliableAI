@@ -1,0 +1,26 @@
+{
+  "model_ids": [
+    "jialicheng/cifar10_resnet-50",
+    "jialicheng/unlearn-so_cifar10_resnet-50_salun_10_100"
+  ],
+  "true_label": "truck",
+  "predictions": [
+    {
+      "label_id": 9,
+      "label_name": "truck",
+      "confidence": 0.6820037364959717
+    },
+    {
+      "label_id": 1,
+      "label_name": "automobile",
+      "confidence": 0.425111323595047
+    }
+  ],
+  "coverage": [
+    0.0015368852459016393,
+    0.001793032786885246
+  ],
+  "average_coverage": 0.0016649590163934425,
+  "original_image": "generated_010_orig.png",
+  "generated_image": "generated_010_gen.png"
+}

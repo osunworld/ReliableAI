@@ -12,6 +12,7 @@ from models import image_size_from_processor
 
 
 def set_random_seed(seed):
+    # 입력 샘플 선택과 gradient 기반 탐색이 최대한 재현 가능하도록 시드를 맞춘다.
     random.seed(seed)
     np.random.seed(seed)
     torch.manual_seed(seed)
@@ -27,6 +28,10 @@ def _channel_stats(values, device):
 
 
 def preprocess_raw_image(raw_image, processor, device):
+    # CIFAR-10 원본 이미지를 모델이 기대하는 입력 형식으로 맞춘다.
+    # 1) HWC uint8 -> CHW float tensor
+    # 2) processor가 요구하는 해상도로 resize
+    # 3) processor에 저장된 mean/std로 정규화
     if isinstance(raw_image, Image.Image):
         image = np.array(raw_image)
     else:
@@ -43,6 +48,7 @@ def preprocess_raw_image(raw_image, processor, device):
 
 
 def deprocess_image(processed_image, processor):
+    # 저장/시각화를 위해 정규화를 되돌려 사람이 볼 수 있는 RGB 이미지로 복원한다.
     image = processed_image.detach().cpu()
     if image.dim() == 4:
         image = image[0]
@@ -65,6 +71,7 @@ def save_json(data, path):
 
 
 def clip_processed_image(processed_image, processor):
+    # gradient update 이후 입력값이 유효한 이미지 범위를 벗어나지 않도록 다시 제한한다.
     image = processed_image
     mean = _channel_stats(getattr(processor, "image_mean", [0.485, 0.456, 0.406]), image.device)
     std = _channel_stats(getattr(processor, "image_std", [0.229, 0.224, 0.225]), image.device)
@@ -73,10 +80,12 @@ def clip_processed_image(processed_image, processor):
 
 
 def normalize(x):
+    # DeepXplore 스타일로 gradient 크기를 정규화해 step 크기에 덜 민감하게 만든다.
     return x / (torch.sqrt(torch.mean(torch.square(x))) + 1e-5)
 
 
 def constraint_occl(gradients, start_point, rect_shape):
+    # 지정한 사각형 영역에만 perturbation이 들어가도록 gradient를 제한한다.
     new_grads = torch.zeros_like(gradients)
     row, col = start_point
     height, width = rect_shape
@@ -85,11 +94,13 @@ def constraint_occl(gradients, start_point, rect_shape):
 
 
 def constraint_light(gradients):
+    # 이미지 전체 밝기 방향으로만 수정되도록 평균 gradient를 사용한다.
     grad_mean = torch.mean(gradients)
     return torch.ones_like(gradients) * grad_mean
 
 
 def constraint_black(gradients, rect_shape=(10, 10)):
+    # 일부 영역을 어둡게 만드는 쪽으로만 perturbation을 허용한다.
     start_row = random.randint(0, gradients.shape[2] - rect_shape[0])
     start_col = random.randint(0, gradients.shape[3] - rect_shape[1])
     new_grads = torch.zeros_like(gradients)
@@ -102,6 +113,7 @@ def constraint_black(gradients, rect_shape=(10, 10)):
 
 
 def apply_transformation_constraint(gradients, transformation, start_point, occlusion_size):
+    # 과제에서 요구하는 "현실적인" 입력 변형 종류를 한곳에서 선택한다.
     if transformation == "light":
         return constraint_light(gradients)
     if transformation == "occl":
@@ -112,6 +124,7 @@ def apply_transformation_constraint(gradients, transformation, start_point, occl
 
 
 def scale(intermediate_layer_output, rmax=1.0, rmin=0.0):
+    # 원본 DeepXplore처럼 뉴런 활성값을 0~1 범위로 정규화해 threshold 판정을 쉽게 만든다.
     max_val = intermediate_layer_output.max()
     min_val = intermediate_layer_output.min()
     if max_val == min_val:
@@ -121,11 +134,13 @@ def scale(intermediate_layer_output, rmax=1.0, rmin=0.0):
 
 
 def _hidden_states(model, input_tensor):
+    # coverage 계산을 위해 각 모델의 hidden state를 함께 가져온다.
     outputs = model(pixel_values=input_tensor, output_hidden_states=True)
     return outputs.hidden_states
 
 
 def init_coverage_tables(models, sample_input):
+    # (레이어 인덱스, 채널 인덱스) 단위로 coverage table을 초기화한다.
     coverage_tables = []
     with torch.no_grad():
         for model in models:
@@ -140,6 +155,7 @@ def init_coverage_tables(models, sample_input):
 
 
 def neuron_to_cover(model_layer_dict):
+    # 아직 활성화되지 않은 뉴런을 우선적으로 골라 coverage를 늘리도록 한다.
     not_covered = [(layer_name, index) for (layer_name, index), covered in model_layer_dict.items() if not covered]
     if not_covered:
         return random.choice(not_covered)
@@ -153,6 +169,7 @@ def neuron_covered(model_layer_dict):
 
 
 def update_coverage(input_data, model, model_layer_dict, threshold=0.0):
+    # 현재 입력이 어떤 뉴런들을 threshold 이상 활성화시키는지 coverage table에 반영한다.
     with torch.no_grad():
         hidden_states = _hidden_states(model, input_data)
         for layer_idx, hidden_state in enumerate(hidden_states):
@@ -163,6 +180,7 @@ def update_coverage(input_data, model, model_layer_dict, threshold=0.0):
 
 
 def prediction_details(logits, class_names):
+    # 저장과 보고서 작성을 위해 예측 라벨과 confidence를 함께 반환한다.
     probabilities = torch.softmax(logits, dim=-1)
     label_id = int(torch.argmax(probabilities[0]).item())
     confidence = float(probabilities[0, label_id].item())
@@ -180,6 +198,7 @@ def averaged_coverage(coverage_tables):
 
 
 def save_case(output_dir, case_prefix, processor, orig_img, gen_img, true_label, predictions, coverage_tables, model_ids):
+    # 원본 이미지, 생성 이미지, 메타데이터(json)를 한 세트로 저장한다.
     os.makedirs(output_dir, exist_ok=True)
 
     original_path = os.path.join(output_dir, case_prefix + "_orig.png")

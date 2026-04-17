@@ -1,0 +1,26 @@
+{
+  "model_ids": [
+    "jialicheng/cifar10_resnet-50",
+    "jialicheng/unlearn-so_cifar10_resnet-50_salun_10_100"
+  ],
+  "true_label": "cat",
+  "predictions": [
+    {
+      "label_id": 3,
+      "label_name": "cat",
+      "confidence": 0.9983093738555908
+    },
+    {
+      "label_id": 4,
+      "label_name": "deer",
+      "confidence": 0.49523118138313293
+    }
+  ],
+  "coverage": [
+    0.0012807377049180327,
+    0.0015368852459016393
+  ],
+  "average_coverage": 0.0014088114754098361,
+  "original_image": "generated_003_orig.png",
+  "generated_image": "generated_003_gen.png"
+}

@@ -14,6 +14,8 @@ from utils import prediction_details, preprocess_raw_image
 
 
 def main():
+    # smoke test:
+    # 모델 2개가 정상 로드되고 CIFAR-10 입력에 대해 예측을 내는지만 빠르게 확인한다.
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
     print("=== Loading CIFAR-10 sample and PyTorch models ===")
     print("Using device:", device)
