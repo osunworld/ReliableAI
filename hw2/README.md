@@ -71,7 +71,7 @@ pip install -r requirements.txt
 
 ### 3.2 test 실행
 
-[test.py](/Users/Sun/Documents/ReliableAI/hw2/test.py)는 모델과 전처리가 정상 동작하는지 확인하는 간단한 점검 코드다.
+[test.py](test.py)는 모델과 전처리가 정상 동작하는지 확인하는 간단한 점검 코드다.
 
 ```bash
 cd ~/Documents/ReliableAI/hw2
@@ -86,7 +86,7 @@ python test.py
 
 ### 3.3 실제 differential testing 실행
 
-실제 실험 코드는 [CIFAR10_torch/gen_diff.py](/Users/Sun/Documents/ReliableAI/hw2/CIFAR10_torch/gen_diff.py)이다.
+실제 실험 코드는 [CIFAR10_torch/gen_diff.py](/CIFAR10_torch/gen_diff.py)이다.
 
 본 실험은 아래의 설정으로 수행되었다.
 
@@ -105,13 +105,13 @@ python CIFAR10_torch/gen_diff.py occl 2.0 0.01 0.03 180 40 0.5 --occlusion_size 
 - `grad_iterations`: seed당 최대 gradient 반복 횟수
 - `threshold`: coverage 판정 threshold
 
-실행 결과는 기본적으로 [results](/Users/Sun/Documents/ReliableAI/hw2/results)에 저장된다.
+실행 결과는 기본적으로 [results](results)에 저장된다.
 
 ## 4. 원본 DeepXplore에 가한 수정사항
 
 ### 4.1 왜 새 경로가 필요한가
 
-원본 [deepxplore](/Users/Sun/Documents/ReliableAI/hw2/deepxplore)는 다음 환경을 전제로 한다.
+원본 [deepxplore]는 다음 환경을 전제로 한다.
 
 - Python 2.7
 - TensorFlow 1.x
@@ -159,15 +159,15 @@ hw2/
 
 ### 6.1 상위 디렉토리
 
-#### [README.md](/Users/Sun/Documents/ReliableAI/hw2/README.md)
+#### [README.md](README.md)
 
 - 현재 과제 실험 방법과 코드 구조 설명 문서
 
-#### [requirements.txt](/Users/Sun/Documents/ReliableAI/hw2/requirements.txt)
+#### [requirements.txt](requirements.txt)
 
 - 현재 PyTorch 기반 실험을 위한 패키지 목록
 
-#### [test.py](/Users/Sun/Documents/ReliableAI/hw2/test.py)
+#### [test.py](test.py)
 
 - smoke test 실행 파일
 
@@ -175,19 +175,19 @@ hw2/
 
 현재 과제에서 **실제로 사용하는 메인 코드**가 들어 있는 디렉토리다.
 
-#### [configs.py](/Users/Sun/Documents/ReliableAI/hw2/CIFAR10_torch/configs.py)
+#### [configs.py](/CIFAR10_torch/configs.py)
 
 - 콘솔 출력 색상 설정 등 간단한 설정값 보관
 
-#### [models.py](/Users/Sun/Documents/ReliableAI/hw2/CIFAR10_torch/models.py)
+#### [models.py](/CIFAR10_torch/models.py)
 
 - 모델 및 processor 로딩
 
-#### [utils.py](/Users/Sun/Documents/ReliableAI/hw2/CIFAR10_torch/utils.py)
+#### [utils.py](/CIFAR10_torch/utils.py)
 
 - 전처리, 후처리, coverage 계산, 저장 유틸리티
 
-#### [gen_diff.py](/Users/Sun/Documents/ReliableAI/hw2/CIFAR10_torch/gen_diff.py)
+#### [gen_diff.py](/CIFAR10_torch/gen_diff.py)
 
 - differential testing 메인 실행 스크립트
 
@@ -197,9 +197,6 @@ hw2/
 - `*_orig.png`: 원본 이미지
 - `*_gen.png`: perturbation 적용 후 이미지
 - `*.json`: 예측 결과, confidence, coverage 메타데이터
-
-또한 [requirements-legacy.txt](/Users/Sun/Documents/ReliableAI/hw2/deepxplore/requirements-legacy.txt)는
-원본 DeepXplore 실행을 위한 legacy 의존성을 따로 기록한 파일이다.
 
 ## 7. 결과 저장 형식
 
