@@ -1,10 +1,10 @@
 import csv
 import os
 
-import cifar10
-import fgsm
-import mnist
-import pgd
+import ReliableAI.hw1.cifar10 as cifar10
+import ReliableAI.hw1.fgsm as fgsm
+import ReliableAI.hw1.mnist as mnist
+import ReliableAI.hw1.pgd as pgd
 
 
 EPS_VALUES = [0.01, 0.05, 0.1, 0.2, 0.3, 0.5]

@@ -4,8 +4,8 @@ import matplotlib.pyplot as plt
 import numpy as np
 import torch
 
-from fgsm import fgsm_targeted, fgsm_untargeted
-from pgd import pgd_targeted, pgd_untargeted
+from ReliableAI.hw1.fgsm import fgsm_targeted, fgsm_untargeted
+from ReliableAI.hw1.pgd import pgd_targeted, pgd_untargeted
 
 
 RESULTS_DIR = os.path.join(os.path.dirname(__file__), "results")
