@@ -13,6 +13,7 @@ Marabou로 local robustness를 검증하는 단일 실행 스크립트.
 
 from __future__ import annotations
 
+import matplotlib.pyplot as plt
 import argparse
 import importlib
 import sys
@@ -362,6 +363,30 @@ def main() -> None:
                 )
                 print("[counterexample] adversarial 8x8 input:")
                 print(np.array2string(result["adv_input"], precision=4, suppress_small=True))
+                orig = sample[0]
+                adv = result["adv_input"]
+                diff = adv - orig
+
+                fig, axes = plt.subplots(1, 3, figsize=(9, 3))
+
+                axes[0].imshow(orig, cmap="gray_r", vmin=0, vmax=1)
+                axes[0].set_title(f"Original ({true_label})")
+                axes[0].axis("off")
+
+                axes[1].imshow(adv, cmap="gray_r", vmin=0, vmax=1)
+                axes[1].set_title(f"Adversarial ({result['adv_pred']})")
+                axes[1].axis("off")
+
+                im = axes[2].imshow(diff, cmap="bwr", vmin=-args.epsilon, vmax=args.epsilon)
+                axes[2].set_title("Difference")
+                axes[2].axis("off")
+                fig.colorbar(im, ax=axes[2], fraction=0.046, pad=0.04)
+
+                plt.tight_layout()
+                out_path = Path("counterexample.png")
+                plt.savefig(out_path, dpi=200, bbox_inches="tight")
+                print(f"[counterexample] saved visualization to {out_path.resolve()}")
+                plt.show()
                 break
 
         sat_result = next((r for r in results if r["exit_code"] == "sat"), None)
