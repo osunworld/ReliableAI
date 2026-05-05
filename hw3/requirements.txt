@@ -1,0 +1,12 @@
+# Python dependencies for hw3/test.py
+numpy
+scikit-learn
+matplotlib
+
+torch
+
+onnx
+onnxruntime
+onnxscript
+
+cmake<4
