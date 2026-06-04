@@ -1,0 +1,46 @@
+# alpha-beta-CROWN configuration for Assignment 4 Problem 2.
+# The external model and dataloader are defined in ./test.py.
+# test.py trains the PyTorch checkpoint before launching this config.
+
+general:
+  device: cpu
+  results_file: /home1/sun5676/ReliableAI/hw4/results/abcrown_digits_linf.pkl
+
+model:
+  name: Customized("test.py", "digits_cnn")
+  path: ${CONFIG_PATH}/artifacts/digits_cnn.pth
+  input_shape: [-1, 1, 8, 8]
+
+data:
+  dataset: Customized("test.py", "digits_test_data", sample_index=348, seed=7)
+  num_outputs: 10
+  mean: [0.0]
+  std: [1.0]
+  start: 0
+  end: 1
+
+specification:
+  norm: .inf
+  epsilon: 0.01
+  robustness_type: verified-acc
+
+attack:
+  pgd_steps: 50
+  pgd_restarts: 10
+
+solver:
+  batch_size: 64
+  alpha-crown:
+    iteration: 20
+    lr_alpha: 0.1
+  beta-crown:
+    iteration: 10
+    lr_alpha: 0.01
+    lr_beta: 0.05
+
+bab:
+  timeout: 30
+  branching:
+    reduceop: min
+    method: kfsb
+    candidates: 3
