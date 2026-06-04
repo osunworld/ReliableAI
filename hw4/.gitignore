@@ -1,0 +1,7 @@
+alpha-beta-CROWN/
+artifacts/
+__pycache__/
+*.py[cod]
+
+results/*
+!results/.gitkeep
