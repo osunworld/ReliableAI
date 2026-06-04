@@ -1,0 +1,16 @@
+torch>=2.0,<2.9
+torchvision>=0.12,<0.24
+numpy
+scikit-learn
+pandas
+pyyaml
+onnx
+onnxruntime
+onnxoptimizer
+skl2onnx
+sortedcontainers
+psutil
+gurobipy
+onnx2pytorch @ git+https://github.com/Verified-Intelligence/onnx2pytorch.git
+
+-e ./alpha-beta-CROWN/auto_LiRPA
