@@ -326,6 +326,8 @@ def run_abcrown(args: argparse.Namespace) -> int:
         str(config_path),
         "--device",
         args.device,
+        "--results_file",
+        str(RESULTS_DIR / "abcrown_digits_linf.pkl"),
     ]
     if args.epsilon is not None:
         command.extend(["--epsilon", str(args.epsilon)])

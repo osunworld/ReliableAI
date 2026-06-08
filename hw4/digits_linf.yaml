@@ -4,7 +4,6 @@
 
 general:
   device: cpu
-  results_file: /home1/sun5676/ReliableAI/hw4/results/abcrown_digits_linf.pkl
 
 model:
   name: Customized("test.py", "digits_cnn")
